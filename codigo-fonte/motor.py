@@ -4,7 +4,7 @@ def teto_de_r(tarefas):
 
 
 def simular(tarefas, politica=None, preemptivo=False, ttc=0, tq=None,
-            protocolo=None):
+            protocolo=None, alfa=0):
     relogio = 0
     atual = None
     ultima = None
@@ -26,6 +26,14 @@ def simular(tarefas, politica=None, preemptivo=False, ttc=0, tq=None,
 
     while not all(t.terminou() for t in tarefas):
         enfileirar()
+
+        if alfa:
+            for t in tarefas:
+                if t.ultimo_despacho is None:
+                    desde = t.ingresso
+                else:
+                    desde = t.ultimo_despacho
+                t.bonus = alfa * max(0, relogio - desde)
 
         if protocolo == "heranca" and detentor is not None:
             esperando = [t.prioridade for t in tarefas if t.suspensa]
@@ -70,6 +78,7 @@ def simular(tarefas, politica=None, preemptivo=False, ttc=0, tq=None,
         linha_do_tempo.append((relogio, atual.id))
         atual.executado += 1
         relogio += 1
+        atual.ultimo_despacho = relogio
         fatia -= 1
 
         if detentor is atual and not atual.precisa_de_r():

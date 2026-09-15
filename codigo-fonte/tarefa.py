@@ -10,6 +10,8 @@ class Tarefa:
         self.primeira_exec = None
         self.suspensa = False
         self.elevacao = None
+        self.bonus = 0
+        self.ultimo_despacho = None
 
     def restante(self):
         return self.tp - self.executado
@@ -24,9 +26,10 @@ class Tarefa:
         return inicio <= self.executado < inicio + duracao
 
     def prio_efetiva(self):
-        if self.elevacao is None:
-            return self.prioridade
-        return max(self.prioridade, self.elevacao)
+        base = self.prioridade
+        if self.elevacao is not None:
+            base = max(base, self.elevacao)
+        return base + self.bonus
 
     def tt(self):
         return self.conclusao - self.ingresso
