@@ -11,6 +11,7 @@ def simular(tarefas, politica=None, preemptivo=False, ttc=0, tq=None,
     trocas = 0
     fatia = 0
     linha_do_tempo = []
+    eventos = []
     fila = []
     ingressadas = []
     detentor = None
@@ -67,15 +68,26 @@ def simular(tarefas, politica=None, preemptivo=False, ttc=0, tq=None,
                 atual = None
                 continue
 
-        if atual is not ultima:
+        houve_troca = atual is not ultima
+        if houve_troca:
             trocas += 1
-            relogio += ttc
+            for _ in range(ttc):
+                eventos.append({"t": relogio, "executando": None,
+                                "com_r": None, "suspensas": [], "troca": True})
+                relogio += 1
             ultima = atual
 
         if atual.primeira_exec is None:
             atual.primeira_exec = relogio - atual.ingresso
 
         linha_do_tempo.append((relogio, atual.id))
+        eventos.append({
+            "t": relogio,
+            "executando": atual.id,
+            "com_r": detentor.id if detentor is not None else None,
+            "suspensas": [t.id for t in tarefas if t.suspensa],
+            "troca": houve_troca and ttc == 0,
+        })
         atual.executado += 1
         relogio += 1
         atual.ultimo_despacho = relogio
@@ -95,7 +107,8 @@ def simular(tarefas, politica=None, preemptivo=False, ttc=0, tq=None,
             fila.append(atual)
             atual = None
 
-    return {"trocas": trocas, "linha_do_tempo": linha_do_tempo, "fim": relogio}
+    return {"trocas": trocas, "linha_do_tempo": linha_do_tempo,
+            "eventos": eventos, "fim": relogio}
 
 
 def eficiencia(tq, ttc):

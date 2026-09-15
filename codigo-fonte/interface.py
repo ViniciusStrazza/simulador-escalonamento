@@ -1,9 +1,11 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 
+import cenarios
 from tarefa import Tarefa
 from motor import simular, eficiencia
-from comparacao import ALGORITMOS
+from comparacao import ALGORITMOS, comparar_lote
+from diagrama import diagrama_de_tempo
 from gerador import sortear_dados
 from validacao import EntradaInvalida, inteiro, validar_quantum, ler_tarefa
 
@@ -15,7 +17,7 @@ class Janela:
         self.raiz = raiz
         self.dados = []
         raiz.title("Simulador de Escalonamento de Tarefas")
-        raiz.geometry("760x680")
+        raiz.geometry("860x820")
 
         self._montar_entrada()
         self._montar_lista()
@@ -68,6 +70,10 @@ class Janela:
         self.e_quantidade.pack(side="left", padx=4)
         tk.Button(botoes, text="Sortear tarefas", width=20,
                   command=self.sortear).pack(pady=2)
+        tk.Button(botoes, text="Gravar cenario", width=20,
+                  command=self.gravar).pack(pady=(10, 2))
+        tk.Button(botoes, text="Carregar cenario", width=20,
+                  command=self.carregar).pack(pady=2)
 
     def _montar_parametros(self):
         caixa = tk.LabelFrame(self.raiz, text="Parametros de tempo",
@@ -112,14 +118,30 @@ class Janela:
                            value=valor).grid(row=1, column=3 + i, sticky="w",
                                              padx=(20 if i == 0 else 6, 6))
 
-        tk.Button(caixa, text="Simular", width=16, command=self.rodar).grid(
-            row=2, column=0, columnspan=6, pady=(10, 0))
+        rodape = tk.Frame(caixa)
+        rodape.grid(row=2, column=0, columnspan=6, pady=(10, 0))
+        tk.Button(rodape, text="Simular", width=16,
+                  command=self.rodar).pack(side="left", padx=6)
+        tk.Label(rodape, text="   Cenarios sorteados:").pack(side="left")
+        self.e_cenarios = tk.Entry(rodape, width=6)
+        self.e_cenarios.insert(0, "50")
+        self.e_cenarios.pack(side="left", padx=4)
+        tk.Button(rodape, text="Comparar os seis", width=18,
+                  command=self.comparar).pack(side="left", padx=6)
 
     def _montar_resultado(self):
         caixa = tk.LabelFrame(self.raiz, text="Resultados", padx=8, pady=6)
         caixa.pack(fill="both", expand=True, padx=10, pady=6)
-        self.saida = tk.Text(caixa, height=14, font=MONO, wrap="none")
-        self.saida.pack(fill="both", expand=True)
+        barra_v = tk.Scrollbar(caixa, orient="vertical")
+        barra_h = tk.Scrollbar(caixa, orient="horizontal")
+        self.saida = tk.Text(caixa, height=16, font=MONO, wrap="none",
+                             yscrollcommand=barra_v.set,
+                             xscrollcommand=barra_h.set)
+        barra_v.config(command=self.saida.yview)
+        barra_h.config(command=self.saida.xview)
+        barra_v.pack(side="right", fill="y")
+        barra_h.pack(side="bottom", fill="x")
+        self.saida.pack(side="left", fill="both", expand=True)
 
     # ------------------------------------------------------------ acoes
 
@@ -210,6 +232,92 @@ class Janela:
                 f"Ocorreu um erro inesperado:\n\n{erro}\n\n"
                 f"A janela continua aberta.")
 
+    def gravar(self):
+        if not self.dados:
+            messagebox.showinfo("Gravar", "Nao ha tarefas para gravar.")
+            return
+        caminho = filedialog.asksaveasfilename(
+            initialdir=cenarios.pasta_de_cenarios(),
+            defaultextension=".json",
+            filetypes=[("Cenario em JSON", "*.json")],
+            title="Gravar o conjunto de tarefas")
+        if not caminho:
+            return
+        try:
+            tq = inteiro(self.e_quantum.get(), "Quantum", 1)
+            ttc = inteiro(self.e_custo.get(), "Custo da troca", 0)
+            alfa = inteiro(self.e_alfa.get(), "Passo do envelhecimento", 0)
+        except EntradaInvalida as erro:
+            messagebox.showerror("Valor invalido", str(erro))
+            return
+
+        try:
+            cenarios.gravar(caminho, self.dados, tq=tq, ttc=ttc, alfa=alfa)
+            messagebox.showinfo("Gravar", f"Cenario gravado em:\n{caminho}")
+        except Exception as erro:
+            messagebox.showerror("Gravar", f"Nao foi possivel gravar:\n{erro}")
+
+    def carregar(self):
+        caminho = filedialog.askopenfilename(
+            initialdir=cenarios.pasta_de_cenarios(),
+            filetypes=[("Cenario em JSON", "*.json")],
+            title="Carregar um conjunto de tarefas")
+        if not caminho:
+            return
+        try:
+            dados, parametros = cenarios.carregar(caminho)
+        except Exception as erro:
+            messagebox.showerror(
+                "Carregar", f"Nao foi possivel ler o arquivo:\n{erro}")
+            return
+
+        self.dados = dados
+        for campo, chave in [(self.e_quantum, "tq"),
+                             (self.e_custo, "ttc"),
+                             (self.e_alfa, "alfa")]:
+            valor = parametros.get(chave)
+            if valor not in (None, ""):
+                campo.delete(0, tk.END)
+                campo.insert(0, str(valor))
+        self.redesenhar_lista()
+
+    def comparar(self):
+        try:
+            n_cenarios = inteiro(self.e_cenarios.get(), "Cenarios sorteados", 1)
+            n_tarefas = inteiro(self.e_quantidade.get(), "Quantidade", 1)
+            ttc = inteiro(self.e_custo.get(), "Custo da troca", 0)
+            tq = inteiro(self.e_quantum.get(), "Quantum", 1)
+            validar_quantum(tq, ttc)
+        except EntradaInvalida as erro:
+            messagebox.showerror("Valor invalido", str(erro))
+            return
+
+        medias = comparar_lote(n_cenarios, n_tarefas, tq=tq, ttc=ttc)
+
+        linhas = [f"Lote de {n_cenarios} cenarios sorteados de "
+                  f"{n_tarefas} tarefas    tq = {tq}    ttc = {ttc}",
+                  "",
+                  f"{'algoritmo':<12}{'Tt':>8}{'Tw':>8}{'1a exec':>10}",
+                  "-" * 38]
+        for nome, m in medias.items():
+            linhas.append(f"{nome:<12}{m['Tt']:>8.2f}{m['Tw']:>8.2f}"
+                          f"{m['primeira']:>10.2f}")
+        linhas.append("-" * 38)
+
+        menor_tw = min(medias, key=lambda n: medias[n]["Tw"])
+        menor_1a = min(medias, key=lambda n: medias[n]["primeira"])
+        linhas.append("")
+        linhas.append(f"Menor tempo de espera medio: {menor_tw}")
+        linhas.append(f"Menor tempo ate a primeira execucao: {menor_1a}")
+        linhas.append("")
+        linhas.append("Os valores absolutos mudam a cada execucao, porque "
+                      "cada lote sorteia")
+        linhas.append("outros cenarios. O que se mantem e a ordenacao entre "
+                      "os algoritmos.")
+
+        self.saida.delete("1.0", tk.END)
+        self.saida.insert("1.0", "\n".join(linhas))
+
     def protocolo_escolhido(self):
         escolha = self.protocolo.get()
         return None if escolha == "nenhum" else escolha
@@ -243,6 +351,11 @@ class Janela:
                           "(o algoritmo nao usa quantum)")
         else:
             linhas.append(f"Eficiencia: {tq}/({tq} + {ttc}) = {e:.3f}")
+
+        linhas.append("")
+        linhas.append("Diagrama de tempo")
+        linhas.append("")
+        linhas.append(diagrama_de_tempo(tarefas, resultado["eventos"]))
 
         self.saida.delete("1.0", tk.END)
         self.saida.insert("1.0", "\n".join(linhas))
