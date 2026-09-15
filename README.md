@@ -1,118 +1,99 @@
 # Simulador de Escalonamento de Tarefas
 
-Projeto prático da disciplina de **Sistemas Operacionais**.
+Projeto prático da disciplina de Sistemas Operacionais, ministrada por
+<!-- TODO: nome do professor -->. Semestre <!-- TODO: ano/semestre -->.
 
-O trabalho consiste em desenvolver um simulador de escalonamento de tarefas em
-um processador, capaz de reproduzir os algoritmos vistos em sala e o fenômeno
-da inversão de prioridades, com seus mecanismos de correção.
+## Como executar
 
-O simulador implementa seis algoritmos:
+Clique duas vezes em `Simulador.exe`, na raiz desta pasta.
+Não é necessário instalar nada nem digitar comando algum.
 
-- **FCFS** — First-Come, First-Served
-- **SJF** — Shortest Job First
-- **SRTF** — Shortest Remaining Time First
-- **RR** — Round-Robin
-- **PRIOc** — Prioridade cooperativa
-- **PRIOp** — Prioridade preemptiva
+<!-- Esta seção vem propositalmente antes de todas as outras: é a primeira
+     coisa que quem avalia vai procurar. Não a mova para baixo. -->
 
-E os mecanismos de tratamento de recursos de uso exclusivo: **inversão de
-prioridades**, **herança de prioridade**, **teto de prioridade** e
-**envelhecimento**.
+## Autoria
 
-## Documentos do projeto
+- Vinicius Strazza — [@ViniciusStrazza](https://github.com/ViniciusStrazza)
+- <!-- TODO: integrante 2 — @usuario -->
+- <!-- TODO: integrante 3 — @usuario -->
 
-Leia os dois antes de começar.
+## Descrição
 
-- [📄 Enunciado](./documentos/01_enunciado.pdf) — o que o simulador precisa
-  fazer: os dez requisitos e os cenários de referência
-- [📘 Guia de documentação](./documentos/02_guia_documentacao.pdf) — o que
-  escrever no README, nos tutoriais e na documentação técnica
+Simulador de escalonamento de tarefas em um processador único, com tempo
+discreto. Implementa os seis algoritmos estudados em sala — FCFS, SJF, SRTF,
+Round-Robin, prioridade cooperativa e prioridade preemptiva — e apresenta,
+por tarefa e em média, o tempo de execução, o tempo de processamento, o tempo
+de espera e o tempo até a primeira execução.
 
-O enunciado descreve *o que fazer*; o guia de documentação descreve *como
-organizar a entrega*.
+O simulador trata recursos de uso exclusivo e reproduz o fenômeno da inversão
+de prioridades, com os dois protocolos de correção estudados: herança de
+prioridade e teto de prioridade. Implementa também o envelhecimento como
+tratamento da inanição sob prioridade cooperativa.
 
-## Organização deste repositório
+## Requisitos de ambiente
 
-A branch `main` guarda apenas os documentos do projeto e **nunca recebe
-entregas**. Cada grupo tem uma **branch dedicada**, onde a entrega aprovada é
-incorporada.
+- Windows <!-- TODO: confirmar versões testadas -->
+- Nenhuma biblioteca externa é necessária para executar o `Simulador.exe`.
 
-### Estado inicial
+Para executar a partir do código-fonte:
+
+- Python <!-- TODO: versão -->
+- `tkinter` (acompanha a instalação padrão do Python)
+- <!-- TODO: demais bibliotecas, se houver -->
+
+```bash
+cd codigo-fonte
+python main.py
+```
+
+## Estrutura do repositório
 
 ```
 simulador-escalonamento/
-└── main
-    ├── README.md
-    ├── .gitignore
-    └── documentos/
+|-- README.md              este arquivo
+|-- Simulador.exe          programa pronto para executar (duplo clique)
+|-- codigo-fonte/          o programa em si
+|-- cenarios/              conjuntos de tarefas gravados, em JSON
+|-- testes/                verificação automatizada dos cenários de referência
+|-- docs/                  tutoriais e documentação técnica
+'-- documentos/            enunciado e guias da disciplina
 ```
 
-### Ao longo do semestre
+## Arquivos de código
 
-```
-simulador-escalonamento/
-├── main       Documentos do projeto (não muda)
-├── grupo1     Entrega do grupo 1
-├── grupo2     Entrega do grupo 2
-├── ...
-└── grupo8     Entrega do grupo 8
-```
+<!-- TODO: preencher conforme os módulos forem criados. Uma linha por arquivo,
+     dizendo o que ele faz. -->
 
-**Como navegar entre as entregas:** clique no seletor de branches, no canto
-superior esquerdo, onde aparece `main`, e escolha a branch do grupo desejado.
+| Arquivo | O que faz |
+|---|---|
+| `codigo-fonte/main.py` | Ponto de entrada. Abre a janela do programa. |
+| | |
 
-## Como entregar
+## Funcionalidades
 
-A entrega é feita por **fork + pull request**, conforme o guia de entrega
-distribuído em aula:
+<!-- TODO: marcar conforme implementado, e indicar o arquivo. -->
 
-1. **Fazer o fork** deste repositório (botão `Fork`, no canto superior direito)
-2. **Clonar o fork** na máquina de um dos integrantes
-3. **Desenvolver o trabalho** no fork
-4. **Fazer commit e push** a cada avanço, ao longo de todo o desenvolvimento, e
-   não apenas no final. O commit registra a alteração no seu computador; só o
-   push a envia para o fork, que é o que o GitHub enxerga
-5. **Abrir um pull request para a branch do seu grupo**, com o título no
-   formato:
+| Requisito | O que faz | Onde |
+|---|---|---|
+| R1 | Os seis algoritmos de escalonamento | |
+| R2 | Entrada de tarefas, sorteio, gravar e recarregar | |
+| R3 | Métricas por tarefa e em média | |
+| R4 | Quantum, custo da troca de contexto e eficiência | |
+| R5 | Recurso de uso exclusivo e inversão de prioridades | |
+| R6 | Herança de prioridade | |
+| R7 | Teto de prioridade | |
+| R8 | Envelhecimento | |
+| R9 | Gerador de cenários e comparação por lote | |
+| R10 | Execução por duplo clique | `Simulador.exe` |
 
-```
-Entrega - Grupo XX - Nome dos integrantes
-```
+## Documentação
 
-> **O erro mais comum:** o GitHub oferece `main` como destino por padrão. A
-> `main` é protegida e não recebe entregas, então um pull request apontado para
-> ela é devolvido sem análise. Troque o campo `base` para a branch do seu grupo
-> **antes** de criar o pull request.
+- [Tutorial de execução](./docs/tutorial_execucao.pdf)
+- [Tutorial de uso](./docs/tutorial_uso.pdf)
+- [Documentação técnica](./docs/documentacao_projeto.pdf)
 
-## Estrutura esperada dentro do fork
+## Por onde começar
 
-```
-simulador-escalonamento/
-├── README.md              como executar, integrantes, funcionalidades
-├── Simulador.exe          o arquivo que abre com dois cliques
-├── main.py                ponto de entrada do código-fonte
-├── simulador/             código-fonte
-├── cenarios/              conjuntos de tarefas gravados
-└── docs/                  tutoriais e documentação técnica
-```
-
-Há um modelo de README de grupo em
-[`documentos/modelo_readme_do_grupo.md`](./documentos/modelo_readme_do_grupo.md).
-Detalhes do conteúdo no
-[guia de documentação](./documentos/02_guia_documentacao.pdf).
-
-## Entregas dos grupos
-
-Entregas aprovadas e incorporadas ao repositório:
-
-<!-- Adicionar conforme os pull requests forem aceitos:
-- [Grupo 1](../../tree/grupo1) — Nomes dos integrantes
--->
-
-*Nenhuma entrega aprovada até o momento.*
-
-## Observações
-
-- O projeto precisa **abrir com dois cliques**, sem montagem de ambiente
-- Não há relatório escrito: a análise dos resultados é feita oralmente
-- Dúvidas: abrir uma **Issue** neste repositório
+1. Abra o programa e siga o tutorial de execução;
+2. Reproduza um cenário de exemplo pelo tutorial de uso;
+3. Consulte a documentação técnica para entender o funcionamento interno.
