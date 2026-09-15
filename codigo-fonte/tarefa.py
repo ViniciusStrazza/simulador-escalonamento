@@ -1,18 +1,32 @@
 class Tarefa:
-    def __init__(self, id, ingresso, tp, prioridade=1):
+    def __init__(self, id, ingresso, tp, prioridade=1, secao_critica=None):
         self.id = id
         self.ingresso = ingresso
         self.tp = tp
         self.prioridade = prioridade
+        self.secao_critica = secao_critica
         self.executado = 0
         self.conclusao = None
         self.primeira_exec = None
+        self.suspensa = False
+        self.elevacao = None
 
     def restante(self):
         return self.tp - self.executado
 
     def terminou(self):
         return self.executado >= self.tp
+
+    def precisa_de_r(self):
+        if self.secao_critica is None:
+            return False
+        inicio, duracao = self.secao_critica
+        return inicio <= self.executado < inicio + duracao
+
+    def prio_efetiva(self):
+        if self.elevacao is None:
+            return self.prioridade
+        return max(self.prioridade, self.elevacao)
 
     def tt(self):
         return self.conclusao - self.ingresso

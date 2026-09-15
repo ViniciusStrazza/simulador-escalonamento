@@ -1,4 +1,10 @@
-def simular(tarefas, politica=None, preemptivo=False, ttc=0, tq=None):
+def teto_de_r(tarefas):
+    usuarias = [t.prioridade for t in tarefas if t.secao_critica is not None]
+    return max(usuarias) if usuarias else None
+
+
+def simular(tarefas, politica=None, preemptivo=False, ttc=0, tq=None,
+            protocolo=None):
     relogio = 0
     atual = None
     ultima = None
@@ -7,6 +13,8 @@ def simular(tarefas, politica=None, preemptivo=False, ttc=0, tq=None):
     linha_do_tempo = []
     fila = []
     ingressadas = []
+    detentor = None
+    teto = teto_de_r(tarefas)
 
     def enfileirar():
         novas = [t for t in tarefas
@@ -19,9 +27,14 @@ def simular(tarefas, politica=None, preemptivo=False, ttc=0, tq=None):
     while not all(t.terminou() for t in tarefas):
         enfileirar()
 
+        if protocolo == "heranca" and detentor is not None:
+            esperando = [t.prioridade for t in tarefas if t.suspensa]
+            detentor.elevacao = max([detentor.prioridade] + esperando)
+
         if tq is None:
             prontas = [t for t in tarefas
-                       if t.ingresso <= relogio and not t.terminou()]
+                       if t.ingresso <= relogio and not t.terminou()
+                       and not t.suspensa]
             if not prontas:
                 relogio = min(t.ingresso for t in tarefas if not t.terminou())
                 continue
@@ -36,6 +49,16 @@ def simular(tarefas, politica=None, preemptivo=False, ttc=0, tq=None):
                 atual = fila.pop(0)
                 fatia = tq if atual is ultima else tq - ttc
 
+        if atual.precisa_de_r() and detentor is not atual:
+            if detentor is None:
+                detentor = atual
+                if protocolo == "teto":
+                    atual.elevacao = teto
+            else:
+                atual.suspensa = True
+                atual = None
+                continue
+
         if atual is not ultima:
             trocas += 1
             relogio += ttc
@@ -48,6 +71,12 @@ def simular(tarefas, politica=None, preemptivo=False, ttc=0, tq=None):
         atual.executado += 1
         relogio += 1
         fatia -= 1
+
+        if detentor is atual and not atual.precisa_de_r():
+            atual.elevacao = None
+            detentor = None
+            for t in tarefas:
+                t.suspensa = False
 
         if atual.terminou():
             atual.conclusao = relogio
