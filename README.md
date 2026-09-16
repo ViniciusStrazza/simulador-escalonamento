@@ -1,8 +1,8 @@
 # Simulador de Escalonamento de Tarefas
 
 Projeto prático da disciplina de Sistemas Operacionais, ministrada por
-<!-- PREENCHER: nome do professor -->.
-Semestre <!-- PREENCHER: ano/semestre -->.
+Vinicius da Silva Borges.
+Semestre: 8°.
 
 ## Como executar
 
@@ -18,9 +18,10 @@ programas sem assinatura.
 
 ## Autoria
 
+- Arthur Destro - [@ArthurDestro](https://github.com/ArthurDestro)
+- Alex Saifi - [@Alexssn10](https://github.com/Alexssn10)
+- Gustavo Mauriz - [@GuMauriz](https://github.com/GuMauriz)
 - Vinicius Strazza — [@ViniciusStrazza](https://github.com/ViniciusStrazza)
-- <!-- PREENCHER: integrante 2 - @usuario -->
-- <!-- PREENCHER: integrante 3 - @usuario -->
 
 ## Descrição
 
